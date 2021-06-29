@@ -19,8 +19,8 @@ const addBookHandler = (request, h) => {
   }
 
   const id = nanoid(16);
-  const createdAt = new Date().toISOString();
-  const updatedAt = createdAt;
+  const insertedAt = new Date().toISOString();
+  const updatedAt = insertedAt;
 
   const newBook = {
     id,
@@ -33,7 +33,7 @@ const addBookHandler = (request, h) => {
     readPage,
     reading,
     finished,
-    createdAt,
+    insertedAt,
     updatedAt,
   };
 
@@ -90,7 +90,7 @@ const getBookHandler = (request, h) => {
         readBook.push(books[i]);
       }
     }
-    
+
     if (readBook.length === 0) {
       const response = h.response({
         status: "Fail",
@@ -109,7 +109,6 @@ const getBookHandler = (request, h) => {
       response.code(200);
       return response;
     }
-    
   }
 
   if (parseFloat(reading) === 1) {
@@ -189,7 +188,11 @@ const getBookHandler = (request, h) => {
     const response = h.response({
       status: "success",
       data: {
-        books,
+        books: books.map((book) => ({
+          id: book.id,
+          name: book.name,
+          publisher: book.publisher,
+        })),
       },
     });
     response.code(200);
@@ -199,10 +202,10 @@ const getBookHandler = (request, h) => {
   const index = books.findIndex((book) => book.id === id);
   if (index === -1) {
     const response = h.response({
-      status: "failed",
-      message: "Buku yang anda cari tidak ditemukan",
+      status: "fail",
+      message: "Buku tidak ditemukan",
     });
-    response.code(200);
+    response.code(404);
     return response;
   } else {
     const book = books[index];
@@ -233,7 +236,7 @@ const editBookByIdHandler = (request, h) => {
   const updatedAt = new Date().toISOString();
   if (request.payload.hasOwnProperty("name") === false) {
     const response = h.response({
-      status: "failed",
+      status: "fail",
       message: "Gagal memperbarui buku. Mohon isi nama buku",
     });
 
@@ -245,7 +248,7 @@ const editBookByIdHandler = (request, h) => {
     const response = h.response({
       status: "fail",
       message:
-        "Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount",
+        "Gagal memperbarui buku. readPage tidak boleh lebih besar dari pageCount",
     });
     response.code(400);
     return response;
@@ -276,7 +279,7 @@ const editBookByIdHandler = (request, h) => {
   }
   const response = h.response({
     status: "fail",
-    message: "Gagal memperbarui catatan. Id tidak ditemukan",
+    message: "Gagal memperbarui buku. Id tidak ditemukan",
   });
   response.code(404);
   return response;
@@ -289,7 +292,7 @@ const deleteBookByIdHandler = (request, h) => {
 
   if (index === -1) {
     const response = h.response({
-      status: "Fail",
+      status: "fail",
       message: "Buku gagal dihapus. Id tidak ditemukan",
     });
     response.code(404);
